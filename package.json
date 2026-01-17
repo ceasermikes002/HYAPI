@@ -1,0 +1,37 @@
+{
+  "name": "HYAPI",
+  "version": "1.0.0",
+  "description": "Hyperliquid Trade Ledger API",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec \"node --loader ts-node/esm\" src/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "hyperliquid": "^1.7.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.9",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.11",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
