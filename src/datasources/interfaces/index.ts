@@ -1,4 +1,4 @@
-import type { Trade } from '../../domain/trade.js';
+import type { Trade } from '../../domain/trade.ts';
 
 export interface IDataSource {
   getUserFills(user: string, startTime?: number, endTime?: number): Promise<Trade[]>;

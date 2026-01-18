@@ -1,5 +1,5 @@
-import type { IDataSource } from '../datasources/interfaces/index.js';
-import type { Trade, TradeFilter } from '../domain/trade.js';
+import type { IDataSource } from '../datasources/interfaces/index.ts';
+import type { Trade, TradeFilter } from '../domain/trade.ts';
 import { normalizeTimeRange } from '../utils/time.js';
 
 export class TradeService {

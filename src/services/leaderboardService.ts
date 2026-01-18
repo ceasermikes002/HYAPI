@@ -24,12 +24,20 @@ export class LeaderboardService {
                 maxStartCapital: filter.maxStartCapital
             });
 
+            if (filter.builderOnly && pnl.tainted) {
+                return null;
+            }
+
             let metricValue = 0;
             switch (filter.metric) {
-                case 'pnl': metricValue = pnl.realizedPnl; break;
-                case 'returnPct': metricValue = pnl.returnPct; break;
-                case 'volume': 
-                    metricValue = 0; 
+                case 'pnl':
+                    metricValue = pnl.realizedPnl;
+                    break;
+                case 'returnPct':
+                    metricValue = pnl.returnPct;
+                    break;
+                case 'volume':
+                    metricValue = pnl.volume;
                     break;
             }
 

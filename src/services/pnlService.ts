@@ -45,7 +45,6 @@ export class PnlService {
     
     const { startTime, endTime } = normalizeTimeRange(fromMs, toMs);
     
-    // Fetch trades within the target window
     const trades = await this.dataSource.getUserFills(user, startTime, endTime);
     
     let filteredTrades = trades;
@@ -54,13 +53,10 @@ export class PnlService {
     let isTainted = false;
     const targetBuilder = process.env.TARGET_BUILDER;
 
-    // BUILDER-ONLY FILTERING LOGIC
-    // If enabled, we only consider trades executed by the target builder.
-    // NOTE: This does not account for "tainted" positions where a user modifies a 
-    // builder-opened position via another interface. That requires full lifecycle tracking
-    // which is handled in PositionService, but simplified here for aggregate PnL.
     if (builderOnly && targetBuilder) {
-        filteredTrades = filteredTrades.filter(t => t.builder === targetBuilder);
+        const { filtered, tainted } = this.applyBuilderLifecycleFilter(filteredTrades, targetBuilder);
+        filteredTrades = filtered;
+        isTainted = tainted;
     }
     
     // Aggregate Metrics (O(M) where M is trades in window)
@@ -122,5 +118,87 @@ export class PnlService {
       tainted: isTainted,
       effectiveCapital
     };
+  }
+
+  private applyBuilderLifecycleFilter(trades: any[], targetBuilder: string): { filtered: any[]; tainted: boolean } {
+    if (!trades.length) {
+        return { filtered: [], tainted: false };
+    }
+
+    const sorted = [...trades].sort((a, b) => a.timeMs - b.timeMs);
+    const lifecycleTainted = new Map<string, Set<number>>();
+
+    const isZero = (v: number) => Math.abs(v) < 1e-9;
+
+    const stateMapFirst = new Map<string, { netSize: number; lifecycleId: number }>();
+
+    for (let i = 0; i < sorted.length; i++) {
+        const t = sorted[i];
+        const coinKey = t.coin;
+        let state = stateMapFirst.get(coinKey) || { netSize: 0, lifecycleId: 0 };
+
+        if (isZero(state.netSize)) {
+            state.lifecycleId += 1;
+        }
+
+        const lifecycleId = state.lifecycleId;
+        const lk = `${coinKey}#${lifecycleId}`;
+
+        if (t.builder && t.builder !== targetBuilder) {
+            let set = lifecycleTainted.get(coinKey);
+            if (!set) {
+                set = new Set<number>();
+                lifecycleTainted.set(coinKey, set);
+            }
+            set.add(lifecycleId);
+        }
+
+        const tradeSize = t.side === 'B' ? t.sz : -t.sz;
+        state.netSize += tradeSize;
+        if (isZero(state.netSize)) {
+            state.netSize = 0;
+        }
+        stateMapFirst.set(coinKey, state);
+    }
+
+    const taintedLifecycleKeys = new Set<string>();
+    for (const [coinKey, set] of lifecycleTainted.entries()) {
+        for (const id of set.values()) {
+            taintedLifecycleKeys.add(`${coinKey}#${id}`);
+        }
+    }
+
+    const result: any[] = [];
+    let tainted = false;
+
+    const stateMapSecond = new Map<string, { netSize: number; lifecycleId: number }>();
+
+    for (let i = 0; i < sorted.length; i++) {
+        const t = sorted[i];
+        const coinKey = t.coin;
+        let state = stateMapSecond.get(coinKey) || { netSize: 0, lifecycleId: 0 };
+
+        if (isZero(state.netSize)) {
+            state.lifecycleId += 1;
+        }
+
+        const lifecycleId = state.lifecycleId;
+        const lk = `${coinKey}#${lifecycleId}`;
+
+        if (taintedLifecycleKeys.has(lk)) {
+            tainted = true;
+        } else if (t.builder === targetBuilder) {
+            result.push(t);
+        }
+
+        const tradeSize = t.side === 'B' ? t.sz : -t.sz;
+        state.netSize += tradeSize;
+        if (isZero(state.netSize)) {
+            state.netSize = 0;
+        }
+        stateMapSecond.set(coinKey, state);
+    }
+
+    return { filtered: result, tainted };
   }
 }
