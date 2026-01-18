@@ -9,3 +9,5 @@ services:
       - PORT=3000
       - NODE_ENV=production
       - TARGET_BUILDER=${TARGET_BUILDER}
+      - TEST_USERS=${TEST_USERS}
+  

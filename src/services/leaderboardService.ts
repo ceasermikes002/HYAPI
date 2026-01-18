@@ -2,11 +2,19 @@ import { PnlService } from './pnlService.js';
 import type { LeaderboardEntry, LeaderboardFilter } from '../domain/leaderboard.js';
 
 export class LeaderboardService {
-  private users: string[] = [
-      '0x53c907b8849b3c4c7c8c454e4c4c954e4c4c954e', 
-  ];
+  private users: string[] = [];
 
-  constructor(private pnlService: PnlService) {}
+  constructor(private pnlService: PnlService) {
+      // Load default users from environment
+      if (process.env.TEST_USERS) {
+          this.users = process.env.TEST_USERS.split(',').map(u => u.trim()).filter(u => u.length > 0);
+      }
+      
+      // Add a default if empty for testing
+      if (this.users.length === 0) {
+          this.users.push('0x53c907b8849b3c4c7c8c454e4c4c954e4c4c954e');
+      }
+  }
 
   addUser(user: string) {
       if (!this.users.includes(user)) this.users.push(user);
