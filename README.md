@@ -12,11 +12,11 @@ A production-grade, dockerized microservice designed to provide reconstructed tr
 
 This service fulfills all requirements for the **Top Prize ($3,000)**:
 
-*   ✅ **Required Endpoints**: Trades, Position History, PnL, Leaderboard.
-*   ✅ **Builder-Only Mode**: Implements `TARGET_BUILDER` filtering with **Taint Analysis**.
-*   ✅ **Data Ingestion**: Uses public Hyperliquid API (Info/WS).
-*   ✅ **Datasource Abstraction**: Swappable `IDataSource` interface.
-*   ✅ **Dockerized**: One-command run via `docker-compose`.
+*    **Required Endpoints**: Trades, Position History, PnL, Leaderboard.
+*    **Builder-Only Mode**: Implements `TARGET_BUILDER` filtering with **Taint Analysis**.
+*    **Data Ingestion**: Uses public Hyperliquid API (Info/WS).
+*    **Datasource Abstraction**: Swappable `IDataSource` interface.
+*    **Dockerized**: One-command run via `docker-compose`.
 
 ## Key Features
 
